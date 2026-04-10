@@ -172,26 +172,6 @@ html,body{background:var(--bg);color:var(--text);font-family:-apple-system,Blink
 .taxa-num{font-size:22px;font-weight:800;}
 .taxa-lbl{font-size:10px;color:var(--text3);margin-top:2px;line-height:1.3;}
 .perda-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:16px;}
-.podium-wrap{margin-bottom:16px;}
-.podium-top3{display:flex;align-items:flex-end;justify-content:center;gap:8px;margin-bottom:12px;height:180px;}
-.podium-col{display:flex;flex-direction:column;align-items:center;justify-content:flex-end;flex:1;}
-.podium-col-1{order:2;}
-.podium-col-2{order:1;}
-.podium-col-3{order:3;}
-.podium-info{text-align:center;margin-bottom:6px;padding:0 4px;}
-.podium-conv{font-size:15px;font-weight:800;margin-bottom:2px;}
-.podium-nome{font-size:10px;font-weight:700;color:var(--text2);line-height:1.2;word-break:break-word;}
-.podium-stats{font-size:9px;color:var(--text3);margin-top:2px;}
-.podium-block{width:100%;border-radius:8px 8px 0 0;display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:900;color:#fff;}
-.podium-block-1{background:linear-gradient(180deg,#F59E0B,#D97706);height:80px;}
-.podium-block-2{background:linear-gradient(180deg,#94A3B8,#64748B);height:56px;}
-.podium-block-3{background:linear-gradient(180deg,#F97316,#EA580C);height:44px;}
-.podium-rest{display:flex;flex-direction:column;gap:6px;}
-.podium-rest-item{background:#fff;border:1px solid var(--border);border-radius:10px;padding:10px 14px;display:flex;align-items:center;gap:12px;box-shadow:var(--shadow);}
-.podium-rest-pos{font-size:12px;font-weight:800;color:var(--text3);width:20px;text-align:center;flex-shrink:0;}
-.podium-rest-nome{font-size:12px;font-weight:700;color:var(--text);flex:1;}
-.podium-rest-stats{font-size:11px;color:var(--text3);text-align:right;}
-.podium-rest-conv{font-size:13px;font-weight:800;margin-left:10px;flex-shrink:0;}
 .perda-item{display:flex;justify-content:space-between;align-items:center;padding:8px 12px;background:#fff;border-radius:8px;border:1px solid var(--border);}
 .perda-nome{font-size:12px;color:var(--text2);font-weight:500;}
 .perda-cnt{font-size:13px;font-weight:800;color:var(--red);}
@@ -337,9 +317,6 @@ html,body{background:var(--bg);color:var(--text);font-family:-apple-system,Blink
         <div style="position:relative;width:100%;height:220px;"><canvas id="chart-perda" role="img" aria-label="Motivos de perda"></canvas></div>
       </div>
       <div class="perda-grid" id="anal-perdas"></div>
-
-      <div class="analise-title">Performance por segmento</div>
-      <div id="anal-ranking"></div>
     </div>
   </div>
 </div>
@@ -494,14 +471,8 @@ async function carregarVisitas(){
 function norm(r){return{id:r.id,empresa:r.empresa,data:r.data_visita,nicho:r.nicho||'',status:r.status,contato:r.contato||'',ticket:r.ticket||1000,obs:r.obs||'',proximo:r.proximo||'',deadline:r.deadline||'',retorno:r.retorno||'',motivo_perda:r.motivo_perda||''};}
 
 async function carregarMetas(){
-  const{data}=await db.from('metas').select('*').order('updated_at',{ascending:false}).limit(1);
-  if(data&&data.length>0) metas={
-    sm_clientes:data[0].sm_clientes||20,
-    sm_fat:data[0].sm_fat||20000,
-    sm_prazo:data[0].sm_prazo||'',
-    mm_clientes:data[0].mm_clientes||5,
-    mm_fat:data[0].mm_fat||5000
-  };
+  const{data}=await db.from('metas').select('*').limit(1);
+  if(data&&data.length>0) metas={sm_clientes:data[0].sm_clientes||20,sm_fat:data[0].sm_fat||20000,sm_prazo:data[0].sm_prazo||'',mm_clientes:data[0].mm_clientes||5,mm_fat:data[0].mm_fat||5000};
 }
 
 function showSaving(){const el=document.getElementById('saving');el.classList.add('show');setTimeout(()=>el.classList.remove('show'),1500);}
@@ -536,27 +507,17 @@ async function excluir(id){
 function abrirEditMetas(){
   document.getElementById('sm-cl').value=metas.sm_clientes;
   document.getElementById('sm-fat').value=metas.sm_fat;
-  document.getElementById('sm-prazo').value=metas.sm_prazo&&metas.sm_prazo!=='null'?metas.sm_prazo:'';
+  document.getElementById('sm-prazo').value=metas.sm_prazo||'';
   document.getElementById('mm-cl').value=metas.mm_clientes;
   document.getElementById('mm-fat').value=metas.mm_fat;
   document.getElementById('ov-metas').classList.add('open');
 }
 
 async function salvarMetas(){
-  const novasMetas={
-    sm_clientes:parseInt(document.getElementById('sm-cl').value)||20,
-    sm_fat:parseInt(document.getElementById('sm-fat').value)||20000,
-    sm_prazo:document.getElementById('sm-prazo').value.trim()||null,
-    mm_clientes:parseInt(document.getElementById('mm-cl').value)||5,
-    mm_fat:parseInt(document.getElementById('mm-fat').value)||5000
-  };
-  const{data}=await db.from('metas').select('id').order('updated_at',{ascending:false}).limit(1);
-  if(data&&data.length>0){
-    await db.from('metas').update({...novasMetas,updated_at:new Date().toISOString()}).eq('id',data[0].id);
-  }else{
-    await db.from('metas').insert([novasMetas]);
-  }
-  metas=novasMetas;
+  metas={sm_clientes:parseInt(document.getElementById('sm-cl').value)||20,sm_fat:parseInt(document.getElementById('sm-fat').value)||20000,sm_prazo:document.getElementById('sm-prazo').value||null,mm_clientes:parseInt(document.getElementById('mm-cl').value)||5,mm_fat:parseInt(document.getElementById('mm-fat').value)||5000};
+  const{data}=await db.from('metas').select('id').limit(1);
+  if(data&&data.length>0){await db.from('metas').update(metas).eq('id',data[0].id);}
+  else{await db.from('metas').insert([metas]);}
   showSaving();fchOv('ov-metas');renderMetas();
 }
 
@@ -771,24 +732,7 @@ function renderAnalise(){
     <div class="analise-card"><div class="ac-lbl">Ticket médio</div><div class="ac-val">R$${ticketMedio.toLocaleString('pt-BR')}</div><div class="ac-sub">por cliente fechado</div></div>
     <div class="analise-card"><div class="ac-lbl">Faturamento total</div><div class="ac-val">R$${fatTotal.toLocaleString('pt-BR')}</div><div class="ac-sub">soma dos contratos ativos</div></div>
     <div class="analise-card"><div class="ac-lbl">Melhor mês</div><div class="ac-val ac-good">${fatPorMes[melhorMes]>0?'R$'+fatPorMes[melhorMes].toLocaleString('pt-BR'):'-'}</div><div class="ac-sub">${fatPorMes[melhorMes]>0?nomeMesShort(meses[melhorMes]):'-'}</div></div>
-    <div class="analise-card" style="grid-column:span 2;">
-      <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:8px;">
-        <div>
-          <div class="ac-lbl">Projeção em 31/12/2026</div>
-          <div class="ac-val" style="font-size:28px;">R$${fatProjetado.toLocaleString('pt-BR')}</div>
-          <div class="ac-sub">${clientesProjetados} clientes projetados · ritmo ${(ritmoDiario*30).toFixed(1)} fechamentos/mês</div>
-        </div>
-        <div style="text-align:right;">
-          <div style="font-size:11px;font-weight:700;color:${projecaoCor};background:${projecaoCor==='var(--green2)'?'#D1FAE5':projecaoCor==='var(--amber)'?'#FEF3C7':'#FEE2E2'};padding:4px 10px;border-radius:20px;margin-bottom:6px;">${projecaoStatus}</div>
-          <div style="font-size:11px;color:var(--text3);">${diasRestantes} dias restantes em 2026</div>
-          <div style="font-size:11px;color:var(--text3);">${pctAno}% do ano passou</div>
-        </div>
-      </div>
-      <div style="margin-top:10px;height:6px;background:var(--bg3);border-radius:3px;overflow:hidden;">
-        <div style="height:100%;border-radius:3px;background:var(--navy);width:${pctAno}%;"></div>
-      </div>
-      <div style="display:flex;justify-content:space-between;font-size:9px;color:var(--text3);margin-top:3px;"><span>Jan 2026</span><span>Hoje</span><span>Dez 2026</span></div>
-    </div>`;
+    <div class="analise-card"><div class="ac-lbl">Projeção anual</div><div class="ac-val">R$${projecao.toLocaleString('pt-BR')}</div><div class="ac-sub">se manter o ritmo atual</div></div>`;
 
   // Taxas
   document.getElementById('anal-taxas').innerHTML=`
@@ -810,41 +754,6 @@ function renderAnalise(){
   const perdaEntries=Object.entries(perdas).sort((a,b)=>b[1]-a[1]);
   document.getElementById('anal-perdas').innerHTML=perdaEntries.length?perdaEntries.map(([n,c])=>`<div class="perda-item"><span class="perda-nome">${n}</span><span class="perda-cnt">${c}</span></div>`).join(''):'<div style="color:var(--text3);font-size:13px;padding:12px;">Nenhuma perda registrada ainda.</div>';
 
-
-  // Ranking por segmento — pódio
-  const nichos={};
-  visitas.forEach(v=>{
-    if(!v.nicho)return;
-    if(!nichos[v.nicho])nichos[v.nicho]={visitas:0,propostas:0,fechados:0};
-    nichos[v.nicho].visitas++;
-    if(v.status==='proposta'||v.status==='fechado')nichos[v.nicho].propostas++;
-    if(v.status==='fechado')nichos[v.nicho].fechados++;
-  });
-  const nichoArr=Object.entries(nichos).map(([nome,d])=>({nome,...d,conv:d.visitas>0?Math.round(d.fechados/d.visitas*100):0}));
-  nichoArr.sort((a,b)=>b.conv-a.conv||b.fechados-a.fechados||b.visitas-a.visitas);
-  const top5=nichoArr.slice(0,5);
-  const corConv=c=>c>=20?'var(--green2)':c>=10?'var(--amber)':'var(--red)';
-  if(!top5.length){
-    document.getElementById('anal-ranking').innerHTML='<div style="color:var(--text3);font-size:13px;padding:12px;">Cadastre prospects com segmento para ver o pódio.</div>';
-  } else {
-    const p1=top5[0],p2=top5[1],p3=top5[2];
-    const col=n=>n?`<div class="podium-info"><div class="podium-conv" style="color:${corConv(n.conv)}">${n.conv}%</div><div class="podium-nome">${n.nome}</div><div class="podium-stats">${n.visitas}v · ${n.propostas}p · ${n.fechados}f</div></div>`:'';
-    document.getElementById('anal-ranking').innerHTML=`
-      <div class="podium-wrap">
-        <div class="podium-top3">
-          ${p2?`<div class="podium-col podium-col-2">${col(p2)}<div class="podium-block podium-block-2">2°</div></div>`:''}
-          ${p1?`<div class="podium-col podium-col-1">${col(p1)}<div class="podium-block podium-block-1">1°</div></div>`:''}
-          ${p3?`<div class="podium-col podium-col-3">${col(p3)}<div class="podium-block podium-block-3">3°</div></div>`:''}
-        </div>
-        ${top5.length>3?`<div class="podium-rest">${top5.slice(3).map((n,i)=>`
-          <div class="podium-rest-item">
-            <div class="podium-rest-pos">${i+4}°</div>
-            <div class="podium-rest-nome">${n.nome}</div>
-            <div class="podium-rest-stats">${n.visitas} visitas · ${n.propostas} prop. · ${n.fechados} fechados</div>
-            <div class="podium-rest-conv" style="color:${corConv(n.conv)}">${n.conv}%</div>
-          </div>`).join('')}</div>`:''}
-      </div>`;
-  }
   // Destruir charts antigos
   ['chart-fat','chart-ativ','chart-conv','chart-perda'].forEach(id=>{if(charts[id]){charts[id].destroy();delete charts[id];}});
 
