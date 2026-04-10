@@ -766,6 +766,25 @@ function renderAnalise(){
   const perdas={};
   visitas.filter(v=>v.motivo_perda).forEach(v=>{perdas[v.motivo_perda]=(perdas[v.motivo_perda]||0)+1;});
 
+  // Projeção dinâmica até 31/12/2026
+  const hoje2=new Date();
+  const fimAno=new Date('2026-12-31T23:59:59');
+  const diasRestantesAno=Math.max(0,Math.ceil((fimAno-hoje2)/86400000));
+  const diasTotaisAno=365;
+  const diasPassadosAno=diasTotaisAno-diasRestantesAno;
+  const todasDatas=visitas.filter(v=>v.data).map(v=>new Date(v.data+'T12:00:00')).sort((a,b)=>a-b);
+  const primeiroProspect=todasDatas.length>0?todasDatas[0]:hoje2;
+  const diasAtivos=Math.max(1,Math.ceil((hoje2-primeiroProspect)/86400000));
+  const ritmoDiario=totalFech/diasAtivos;
+  const clientesProjetados=Math.round(totalFech+(ritmoDiario*diasRestantesAno));
+  const fatProjetado=Math.round(clientesProjetados*(ticketMedio||1000));
+  const pctAno=Math.min(Math.round((diasPassadosAno/diasTotaisAno)*100),100);
+  const pctMetaProj=metas.sm_clientes>0?Math.round(clientesProjetados/metas.sm_clientes*100):0;
+  let projecaoStatus,projecaoCor;
+  if(pctMetaProj>=100){projecaoStatus='No ritmo para bater a meta';projecaoCor='var(--green2)';}
+  else if(pctMetaProj>=70){projecaoStatus='Abaixo do ritmo — precisa acelerar';projecaoCor='var(--amber)';}
+  else{projecaoStatus='Fora do ritmo — meta em risco';projecaoCor='var(--red)';}
+
   // Resumo cards
   document.getElementById('anal-resumo').innerHTML=`
     <div class="analise-card"><div class="ac-lbl">Ticket médio</div><div class="ac-val">R$${ticketMedio.toLocaleString('pt-BR')}</div><div class="ac-sub">por cliente fechado</div></div>
