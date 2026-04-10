@@ -172,23 +172,26 @@ html,body{background:var(--bg);color:var(--text);font-family:-apple-system,Blink
 .taxa-num{font-size:22px;font-weight:800;}
 .taxa-lbl{font-size:10px;color:var(--text3);margin-top:2px;line-height:1.3;}
 .perda-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:16px;}
-.ranking-grid{display:flex;flex-direction:column;gap:8px;margin-bottom:16px;}
-.ranking-item{background:#fff;border-radius:12px;padding:12px 14px;border:1px solid var(--border);box-shadow:var(--shadow);}
-.ranking-header{display:flex;align-items:center;gap:10px;margin-bottom:8px;}
-.ranking-pos{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;flex-shrink:0;}
-.ranking-pos-1{background:#FEF3C7;color:#92400E;}
-.ranking-pos-2{background:#F3F4F6;color:#374151;}
-.ranking-pos-3{background:#FEF2F2;color:#991B1B;}
-.ranking-pos-n{background:var(--bg3);color:var(--text3);}
-.ranking-nome{font-size:13px;font-weight:700;color:var(--text);flex:1;}
-.ranking-conv{font-size:13px;font-weight:800;}
-.ranking-bars{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;}
-.ranking-bar-item{text-align:center;}
-.ranking-bar-lbl{font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;font-weight:600;margin-bottom:3px;}
-.ranking-bar-val{font-size:16px;font-weight:800;color:var(--navy);}
-.ranking-bar-sub{font-size:9px;color:var(--text3);}
-.ranking-bar-bg2{height:4px;background:var(--bg3);border-radius:2px;overflow:hidden;margin-top:4px;}
-.ranking-bar-fill2{height:100%;border-radius:2px;}
+.podium-wrap{margin-bottom:16px;}
+.podium-top3{display:flex;align-items:flex-end;justify-content:center;gap:8px;margin-bottom:12px;height:180px;}
+.podium-col{display:flex;flex-direction:column;align-items:center;justify-content:flex-end;flex:1;}
+.podium-col-1{order:2;}
+.podium-col-2{order:1;}
+.podium-col-3{order:3;}
+.podium-info{text-align:center;margin-bottom:6px;padding:0 4px;}
+.podium-conv{font-size:15px;font-weight:800;margin-bottom:2px;}
+.podium-nome{font-size:10px;font-weight:700;color:var(--text2);line-height:1.2;word-break:break-word;}
+.podium-stats{font-size:9px;color:var(--text3);margin-top:2px;}
+.podium-block{width:100%;border-radius:8px 8px 0 0;display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:900;color:#fff;}
+.podium-block-1{background:linear-gradient(180deg,#F59E0B,#D97706);height:80px;}
+.podium-block-2{background:linear-gradient(180deg,#94A3B8,#64748B);height:56px;}
+.podium-block-3{background:linear-gradient(180deg,#F97316,#EA580C);height:44px;}
+.podium-rest{display:flex;flex-direction:column;gap:6px;}
+.podium-rest-item{background:#fff;border:1px solid var(--border);border-radius:10px;padding:10px 14px;display:flex;align-items:center;gap:12px;box-shadow:var(--shadow);}
+.podium-rest-pos{font-size:12px;font-weight:800;color:var(--text3);width:20px;text-align:center;flex-shrink:0;}
+.podium-rest-nome{font-size:12px;font-weight:700;color:var(--text);flex:1;}
+.podium-rest-stats{font-size:11px;color:var(--text3);text-align:right;}
+.podium-rest-conv{font-size:13px;font-weight:800;margin-left:10px;flex-shrink:0;}
 .perda-item{display:flex;justify-content:space-between;align-items:center;padding:8px 12px;background:#fff;border-radius:8px;border:1px solid var(--border);}
 .perda-nome{font-size:12px;color:var(--text2);font-weight:500;}
 .perda-cnt{font-size:13px;font-weight:800;color:var(--red);}
@@ -336,7 +339,7 @@ html,body{background:var(--bg);color:var(--text);font-family:-apple-system,Blink
       <div class="perda-grid" id="anal-perdas"></div>
 
       <div class="analise-title">Performance por segmento</div>
-      <div class="ranking-grid" id="anal-ranking"></div>
+      <div id="anal-ranking"></div>
     </div>
   </div>
 </div>
@@ -775,46 +778,40 @@ function renderAnalise(){
   document.getElementById('anal-perdas').innerHTML=perdaEntries.length?perdaEntries.map(([n,c])=>`<div class="perda-item"><span class="perda-nome">${n}</span><span class="perda-cnt">${c}</span></div>`).join(''):'<div style="color:var(--text3);font-size:13px;padding:12px;">Nenhuma perda registrada ainda.</div>';
 
 
-  // Ranking por segmento
+  // Ranking por segmento — pódio
   const nichos={};
   visitas.forEach(v=>{
     if(!v.nicho)return;
-    if(!nichos[v.nicho])nichos[v.nicho]={visitas:0,propostas:0,fechados:0,fat:0};
+    if(!nichos[v.nicho])nichos[v.nicho]={visitas:0,propostas:0,fechados:0};
     nichos[v.nicho].visitas++;
     if(v.status==='proposta'||v.status==='fechado')nichos[v.nicho].propostas++;
-    if(v.status==='fechado'){nichos[v.nicho].fechados++;nichos[v.nicho].fat+=(v.ticket||1000);}
+    if(v.status==='fechado')nichos[v.nicho].fechados++;
   });
   const nichoArr=Object.entries(nichos).map(([nome,d])=>({nome,...d,conv:d.visitas>0?Math.round(d.fechados/d.visitas*100):0}));
   nichoArr.sort((a,b)=>b.conv-a.conv||b.fechados-a.fechados||b.visitas-a.visitas);
   const top5=nichoArr.slice(0,5);
-  const maxVisitas=Math.max(...top5.map(n=>n.visitas),1);
-  const posCls=['ranking-pos-1','ranking-pos-2','ranking-pos-3','ranking-pos-n','ranking-pos-n'];
-  const posLabel=['1°','2°','3°','4°','5°'];
-  document.getElementById('anal-ranking').innerHTML=top5.length?top5.map((n,i)=>`
-    <div class="ranking-item">
-      <div class="ranking-header">
-        <div class="ranking-pos ${posCls[i]}">${posLabel[i]}</div>
-        <div class="ranking-nome">${n.nome}</div>
-        <div class="ranking-conv" style="color:${n.conv>=20?'var(--green2)':n.conv>=10?'var(--amber)':'var(--red)'}">${n.conv}%</div>
-      </div>
-      <div class="ranking-bars">
-        <div class="ranking-bar-item">
-          <div class="ranking-bar-lbl">Visitas</div>
-          <div class="ranking-bar-val">${n.visitas}</div>
-          <div class="ranking-bar-bg2"><div class="ranking-bar-fill2" style="width:${Math.round(n.visitas/maxVisitas*100)}%;background:var(--navy);"></div></div>
+  const corConv=c=>c>=20?'var(--green2)':c>=10?'var(--amber)':'var(--red)';
+  if(!top5.length){
+    document.getElementById('anal-ranking').innerHTML='<div style="color:var(--text3);font-size:13px;padding:12px;">Cadastre prospects com segmento para ver o pódio.</div>';
+  } else {
+    const p1=top5[0],p2=top5[1],p3=top5[2];
+    const col=n=>n?`<div class="podium-info"><div class="podium-conv" style="color:${corConv(n.conv)}">${n.conv}%</div><div class="podium-nome">${n.nome}</div><div class="podium-stats">${n.visitas}v · ${n.propostas}p · ${n.fechados}f</div></div>`:'';
+    document.getElementById('anal-ranking').innerHTML=`
+      <div class="podium-wrap">
+        <div class="podium-top3">
+          ${p2?`<div class="podium-col podium-col-2">${col(p2)}<div class="podium-block podium-block-2">2°</div></div>`:''}
+          ${p1?`<div class="podium-col podium-col-1">${col(p1)}<div class="podium-block podium-block-1">1°</div></div>`:''}
+          ${p3?`<div class="podium-col podium-col-3">${col(p3)}<div class="podium-block podium-block-3">3°</div></div>`:''}
         </div>
-        <div class="ranking-bar-item">
-          <div class="ranking-bar-lbl">Propostas</div>
-          <div class="ranking-bar-val">${n.propostas}</div>
-          <div class="ranking-bar-bg2"><div class="ranking-bar-fill2" style="width:${n.visitas>0?Math.round(n.propostas/n.visitas*100):0}%;background:var(--blue);"></div></div>
-        </div>
-        <div class="ranking-bar-item">
-          <div class="ranking-bar-lbl">Fechados</div>
-          <div class="ranking-bar-val">${n.fechados}</div>
-          <div class="ranking-bar-bg2"><div class="ranking-bar-fill2" style="width:${n.visitas>0?Math.round(n.fechados/n.visitas*100):0}%;background:var(--green2);"></div></div>
-        </div>
-      </div>
-    </div>`).join(''):'<div style="color:var(--text3);font-size:13px;padding:12px;">Cadastre prospects com segmento para ver o ranking.</div>';
+        ${top5.length>3?`<div class="podium-rest">${top5.slice(3).map((n,i)=>`
+          <div class="podium-rest-item">
+            <div class="podium-rest-pos">${i+4}°</div>
+            <div class="podium-rest-nome">${n.nome}</div>
+            <div class="podium-rest-stats">${n.visitas} visitas · ${n.propostas} prop. · ${n.fechados} fechados</div>
+            <div class="podium-rest-conv" style="color:${corConv(n.conv)}">${n.conv}%</div>
+          </div>`).join('')}</div>`:''}
+      </div>`;
+  }
   // Destruir charts antigos
   ['chart-fat','chart-ativ','chart-conv','chart-perda'].forEach(id=>{if(charts[id]){charts[id].destroy();delete charts[id];}});
 
