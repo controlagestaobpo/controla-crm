@@ -494,8 +494,14 @@ async function carregarVisitas(){
 function norm(r){return{id:r.id,empresa:r.empresa,data:r.data_visita,nicho:r.nicho||'',status:r.status,contato:r.contato||'',ticket:r.ticket||1000,obs:r.obs||'',proximo:r.proximo||'',deadline:r.deadline||'',retorno:r.retorno||'',motivo_perda:r.motivo_perda||''};}
 
 async function carregarMetas(){
-  const{data}=await db.from('metas').select('*').limit(1);
-  if(data&&data.length>0) metas={sm_clientes:data[0].sm_clientes||20,sm_fat:data[0].sm_fat||20000,sm_prazo:data[0].sm_prazo||'',mm_clientes:data[0].mm_clientes||5,mm_fat:data[0].mm_fat||5000};
+  const{data}=await db.from('metas').select('*').order('updated_at',{ascending:false}).limit(1);
+  if(data&&data.length>0) metas={
+    sm_clientes:data[0].sm_clientes||20,
+    sm_fat:data[0].sm_fat||20000,
+    sm_prazo:data[0].sm_prazo||'',
+    mm_clientes:data[0].mm_clientes||5,
+    mm_fat:data[0].mm_fat||5000
+  };
 }
 
 function showSaving(){const el=document.getElementById('saving');el.classList.add('show');setTimeout(()=>el.classList.remove('show'),1500);}
@@ -530,17 +536,27 @@ async function excluir(id){
 function abrirEditMetas(){
   document.getElementById('sm-cl').value=metas.sm_clientes;
   document.getElementById('sm-fat').value=metas.sm_fat;
-  document.getElementById('sm-prazo').value=metas.sm_prazo||'';
+  document.getElementById('sm-prazo').value=metas.sm_prazo&&metas.sm_prazo!=='null'?metas.sm_prazo:'';
   document.getElementById('mm-cl').value=metas.mm_clientes;
   document.getElementById('mm-fat').value=metas.mm_fat;
   document.getElementById('ov-metas').classList.add('open');
 }
 
 async function salvarMetas(){
-  metas={sm_clientes:parseInt(document.getElementById('sm-cl').value)||20,sm_fat:parseInt(document.getElementById('sm-fat').value)||20000,sm_prazo:document.getElementById('sm-prazo').value||null,mm_clientes:parseInt(document.getElementById('mm-cl').value)||5,mm_fat:parseInt(document.getElementById('mm-fat').value)||5000};
-  const{data}=await db.from('metas').select('id').limit(1);
-  if(data&&data.length>0){await db.from('metas').update(metas).eq('id',data[0].id);}
-  else{await db.from('metas').insert([metas]);}
+  const novasMetas={
+    sm_clientes:parseInt(document.getElementById('sm-cl').value)||20,
+    sm_fat:parseInt(document.getElementById('sm-fat').value)||20000,
+    sm_prazo:document.getElementById('sm-prazo').value.trim()||null,
+    mm_clientes:parseInt(document.getElementById('mm-cl').value)||5,
+    mm_fat:parseInt(document.getElementById('mm-fat').value)||5000
+  };
+  const{data}=await db.from('metas').select('id').order('updated_at',{ascending:false}).limit(1);
+  if(data&&data.length>0){
+    await db.from('metas').update({...novasMetas,updated_at:new Date().toISOString()}).eq('id',data[0].id);
+  }else{
+    await db.from('metas').insert([novasMetas]);
+  }
+  metas=novasMetas;
   showSaving();fchOv('ov-metas');renderMetas();
 }
 
@@ -755,7 +771,24 @@ function renderAnalise(){
     <div class="analise-card"><div class="ac-lbl">Ticket médio</div><div class="ac-val">R$${ticketMedio.toLocaleString('pt-BR')}</div><div class="ac-sub">por cliente fechado</div></div>
     <div class="analise-card"><div class="ac-lbl">Faturamento total</div><div class="ac-val">R$${fatTotal.toLocaleString('pt-BR')}</div><div class="ac-sub">soma dos contratos ativos</div></div>
     <div class="analise-card"><div class="ac-lbl">Melhor mês</div><div class="ac-val ac-good">${fatPorMes[melhorMes]>0?'R$'+fatPorMes[melhorMes].toLocaleString('pt-BR'):'-'}</div><div class="ac-sub">${fatPorMes[melhorMes]>0?nomeMesShort(meses[melhorMes]):'-'}</div></div>
-    <div class="analise-card"><div class="ac-lbl">Projeção anual</div><div class="ac-val">R$${projecao.toLocaleString('pt-BR')}</div><div class="ac-sub">se manter o ritmo atual</div></div>`;
+    <div class="analise-card" style="grid-column:span 2;">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:8px;">
+        <div>
+          <div class="ac-lbl">Projeção em 31/12/2026</div>
+          <div class="ac-val" style="font-size:28px;">R$\${fatProjetado.toLocaleString('pt-BR')}</div>
+          <div class="ac-sub">\${clientesProjetados} clientes projetados · ritmo \${(ritmoDiario*30).toFixed(1)} fechamentos/mês</div>
+        </div>
+        <div style="text-align:right;">
+          <div style="font-size:11px;font-weight:700;color:\${projecaoCor};background:\${projecaoCor==='var(--green2)'?'#D1FAE5':projecaoCor==='var(--amber)'?'#FEF3C7':'#FEE2E2'};padding:4px 10px;border-radius:20px;margin-bottom:6px;">\${projecaoStatus}</div>
+          <div style="font-size:11px;color:var(--text3);">\${diasRestantes} dias restantes em 2026</div>
+          <div style="font-size:11px;color:var(--text3);">\${pctAno}% do ano passou</div>
+        </div>
+      </div>
+      <div style="margin-top:10px;height:6px;background:var(--bg3);border-radius:3px;overflow:hidden;">
+        <div style="height:100%;border-radius:3px;background:var(--navy);width:\${pctAno}%;"></div>
+      </div>
+      <div style="display:flex;justify-content:space-between;font-size:9px;color:var(--text3);margin-top:3px;"><span>Jan 2026</span><span>Hoje</span><span>Dez 2026</span></div>
+    </div>`;
 
   // Taxas
   document.getElementById('anal-taxas').innerHTML=`
