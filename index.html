@@ -766,23 +766,23 @@ function renderAnalise(){
   visitas.filter(v=>v.motivo_perda).forEach(v=>{perdas[v.motivo_perda]=(perdas[v.motivo_perda]||0)+1;});
 
   // Projeção dinâmica até 31/12/2026
-  const hoje2=new Date();
-  const fimAno=new Date('2026-12-31T23:59:59');
-  const diasRestantesAno=Math.max(0,Math.ceil((fimAno-hoje2)/86400000));
-  const diasTotaisAno=365;
-  const diasPassadosAno=diasTotaisAno-diasRestantesAno;
-  const todasDatas=visitas.filter(v=>v.data).map(v=>new Date(v.data+'T12:00:00')).sort((a,b)=>a-b);
-  const primeiroProspect=todasDatas.length>0?todasDatas[0]:hoje2;
-  const diasAtivos=Math.max(1,Math.ceil((hoje2-primeiroProspect)/86400000));
-  const ritmoDiario=totalFech/diasAtivos;
-  const clientesProjetados=Math.round(totalFech+(ritmoDiario*diasRestantesAno));
-  const fatProjetado=Math.round(clientesProjetados*(ticketMedio||1000));
-  const pctAno=Math.min(Math.round((diasPassadosAno/diasTotaisAno)*100),100);
-  const pctMetaProj=metas.sm_clientes>0?Math.round(clientesProjetados/metas.sm_clientes*100):0;
-  let projecaoStatus,projecaoCor;
-  if(pctMetaProj>=100){projecaoStatus='No ritmo para bater a meta';projecaoCor='var(--green2)';}
-  else if(pctMetaProj>=70){projecaoStatus='Abaixo do ritmo — precisa acelerar';projecaoCor='var(--amber)';}
-  else{projecaoStatus='Fora do ritmo — meta em risco';projecaoCor='var(--red)';}
+  const _hoje=new Date();
+  const _fimAno=new Date('2026-12-31T23:59:59');
+  const _diasRest=Math.max(0,Math.ceil((_fimAno-_hoje)/86400000));
+  const _diasTotal=365;
+  const _diasPass=_diasTotal-_diasRest;
+  const _todasDatas=visitas.filter(v=>v.data).map(v=>new Date(v.data+'T12:00:00')).sort((a,b)=>a-b);
+  const _primeiro=_todasDatas.length>0?_todasDatas[0]:_hoje;
+  const _diasAtivos=Math.max(1,Math.ceil((_hoje-_primeiro)/86400000));
+  const _ritmo=totalFech/_diasAtivos;
+  const _clProj=Math.round(totalFech+(_ritmo*_diasRest));
+  const _fatProj=Math.round(_clProj*(ticketMedio||1000));
+  const _pctAno=Math.min(Math.round((_diasPass/_diasTotal)*100),100);
+  const _pctMeta=metas.sm_clientes>0?Math.round(_clProj/metas.sm_clientes*100):0;
+  let _projStatus,_projCor;
+  if(_pctMeta>=100){_projStatus='No ritmo para bater a meta';_projCor='var(--green2)';}
+  else if(_pctMeta>=70){_projStatus='Abaixo do ritmo — precisa acelerar';_projCor='var(--amber)';}
+  else{_projStatus='Fora do ritmo — meta em risco';_projCor='var(--red)';}
 
   // Resumo cards
   document.getElementById('anal-resumo').innerHTML=`
@@ -793,17 +793,17 @@ function renderAnalise(){
       <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:8px;">
         <div>
           <div class="ac-lbl">Projeção em 31/12/2026</div>
-          <div class="ac-val" style="font-size:28px;">R$${fatProjetado.toLocaleString('pt-BR')}</div>
-          <div class="ac-sub">${clientesProjetados} clientes projetados · ritmo ${(ritmoDiario*30).toFixed(1)} fechamentos/mês</div>
+          <div class="ac-val" style="font-size:28px;">R$${_fatProj.toLocaleString('pt-BR')}</div>
+          <div class="ac-sub">${_clProj} clientes projetados · ritmo ${(_ritmo*30).toFixed(1)} fechamentos/mês</div>
         </div>
         <div style="text-align:right;">
-          <div style="font-size:11px;font-weight:700;color:${projecaoCor};background:${projecaoCor==='var(--green2)'?'#D1FAE5':projecaoCor==='var(--amber)'?'#FEF3C7':'#FEE2E2'};padding:4px 10px;border-radius:20px;margin-bottom:6px;">${projecaoStatus}</div>
-          <div style="font-size:11px;color:var(--text3);">${diasRestantes} dias restantes em 2026</div>
-          <div style="font-size:11px;color:var(--text3);">${pctAno}% do ano passou</div>
+          <div style="font-size:11px;font-weight:700;color:${_projCor};background:${_projCor==='var(--green2)'?'#D1FAE5':_projCor==='var(--amber)'?'#FEF3C7':'#FEE2E2'};padding:4px 10px;border-radius:20px;margin-bottom:6px;">${_projStatus}</div>
+          <div style="font-size:11px;color:var(--text3);">${_diasRest} dias restantes em 2026</div>
+          <div style="font-size:11px;color:var(--text3);">${_pctAno}% do ano passou</div>
         </div>
       </div>
       <div style="margin-top:10px;height:6px;background:var(--bg3);border-radius:3px;overflow:hidden;">
-        <div style="height:100%;border-radius:3px;background:var(--navy);width:${pctAno}%;"></div>
+        <div style="height:100%;border-radius:3px;background:var(--navy);width:${_pctAno}%;"></div>
       </div>
       <div style="display:flex;justify-content:space-between;font-size:9px;color:var(--text3);margin-top:3px;"><span>Jan 2026</span><span>Hoje</span><span>Dez 2026</span></div>
     </div>`;
