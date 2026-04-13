@@ -907,7 +907,21 @@ function abrirIns(){
   t+=`\nSEM FOLLOW-UP HÁ 2+ DIAS\n`;atrasados.forEach(v=>t+=`- ${v.empresa} | ${v.dias} dias\n`);
   t+=`\nMOTIVOS DE PERDA\n`;Object.entries(perdas).sort((a,b)=>b[1]-a[1]).forEach(([n,c])=>t+=`- ${n}: ${c}\n`);
   t+=`\nPOR SEGMENTO\n`;Object.entries(pn).sort((a,b)=>b[1]-a[1]).forEach(([n,c])=>t+=`- ${n}: ${c}\n`);
-  t+=`\n---\nPeça: "Analise meu CRM completo: metas, funil, conversão, motivos de perda e me diga o que priorizar hoje."`;
+  // Detalhes de cada prospect com observações
+  t+=`\nDETALHES DOS PROSPECTS (com observações)\n`;
+  const comObs = visitas.filter(v=>v.obs&&v.obs.trim());
+  comObs.forEach(v=>{
+    t+=`\n[${v.status.toUpperCase()}] ${v.empresa}`;
+    if(v.nicho) t+=` | ${v.nicho}`;
+    if(v.data) t+=` | ${v.data}`;
+    if(v.contato) t+=` | Contato: ${v.contato}`;
+    t+=`\nO que aconteceu: ${v.obs}`;
+    if(v.proximo) t+=`\nPróximo passo: ${v.proximo}`;
+    if(v.motivo_perda) t+=`\nMotivo da perda: ${v.motivo_perda}`;
+    t+=`\n`;
+  });
+
+  t+=`\n---\nPeça: "Analise meu CRM completo: metas, funil, conversão, motivos de perda, e com base nas observações de cada prospect me diga onde estou errando na abordagem, quais prospects têm mais chance de fechar e o que devo priorizar hoje."`;
   document.getElementById('ins-txt').value=t;
   document.getElementById('cok').style.display='none';
   document.getElementById('ov-ins').classList.add('open');
