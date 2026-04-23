@@ -593,7 +593,7 @@ function renderLista(){
   const datas=Object.keys(g).sort((a,b)=>b.localeCompare(a));
   el.innerHTML=datas.map(d=>{
     const h=`<div class="day-hdr"><div class="day-tit">${fmtD(d)}</div><div class="day-cnt">${g[d].length}</div>${dBdg(d)}</div>`;
-    const c=g[d].map(v=>`<div class="card"><div class="ci"><div class="ca" style="background:${COR_S[v.status]||'#9CA3AF'};"></div><div class="cc"><div class="ctop"><div class="cnm">${v.empresa}</div><div class="cacts"><button class="btn btn-xs" onclick="abrirMd('${v.id}')">editar</button><button class="btn btn-xs" onclick="excluir('${v.id}')" style="border-color:#FECACA;color:var(--red);">×</button></div></div><div class="cbdgs"><span class="bdg ${CLS_S[v.status]||'bvis'}">${LBL_S[v.status]||v.status}</span>${v.nicho?`<span class="bdg bnicho">${v.nicho}</span>`:''}${dlBdg(v.deadline)}${v.motivo_perda?`<span class="bdg" style="background:#FEF2F2;color:#991B1B;border:1px solid #FECACA;font-size:9px;">${v.motivo_perda}</span>`:''}</div>${(v.contato||v.whatsapp)?`<div class="cct">${[v.contato,v.whatsapp].filter(Boolean).join(' · ')}</div>`:''}${v.obs?`<div class="cob">${v.obs}</div>`:''}${v.proximo?`<div class="cpx">→ ${v.proximo}</div>`:''}</div></div></div>`).join('');
+    const c=g[d].map(v=>`<div class="card"><div class="ci"><div class="ca" style="background:${COR_S[v.status]||'#9CA3AF'};"></div><div class="cc"><div class="ctop"><div class="cnm">${v.empresa}</div><div class="cacts"><button class="btn btn-xs" onclick="abrirMd('${v.id}')">editar</button><button class="btn btn-xs" onclick="excluir('${v.id}')" style="border-color:#FECACA;color:var(--red);">×</button></div></div><div class="cbdgs"><span class="bdg ${CLS_S[v.status]||'bvis'}">${LBL_S[v.status]||v.status}</span>${v.nicho?`<span class="bdg bnicho">${v.nicho}</span>`:''}${dlBdg(v.deadline)}${v.motivo_perda?`<span class="bdg" style="background:#FEF2F2;color:#991B1B;border:1px solid #FECACA;font-size:9px;">${v.motivo_perda}</span>`:''}</div>${(v.contato||v.whatsapp)?`<div class="cct">${[v.contato,v.whatsapp].filter(Boolean).join(' · ')}</div>`:''}${v.obs?`<div class="cob">${v.obs}</div>`:''}${v.proximo?`<div class="cpx">&rarr; ${v.proximo}</div>`:''}</div></div></div>`).join('');
     return`<div class="day-group">${h}${c}</div>`;
   }).join('');
 }
@@ -628,17 +628,17 @@ function renderAnalise(){
   const txPF=nP>0?Math.round(nF/nP*100):0;
   const txVF=nV>0?Math.round(nF/nV*100):0;
   document.getElementById('anal-conv').innerHTML=
-    `<div class="conv-card" style="border-left-color:var(--blue)"><div class="conv-lbl">Visita → Conversa</div><div class="conv-val" style="color:var(--blue)">${txVC}%</div><div class="conv-sub">${nC} de ${nV} visitas</div></div>`+
-    `<div class="conv-card" style="border-left-color:var(--orange)"><div class="conv-lbl">Conversa → Proposta</div><div class="conv-val" style="color:var(--orange)">${txCP}%</div><div class="conv-sub">${nP} de ${nC} conversas</div></div>`+
-    `<div class="conv-card" style="border-left-color:var(--green2)"><div class="conv-lbl">Proposta → Fechado</div><div class="conv-val" style="color:var(--green2)">${txPF}%</div><div class="conv-sub">${nF} de ${nP} propostas</div></div>`+
-    `<div class="conv-card" style="border-left-color:var(--text3)"><div class="conv-lbl">Visita → Fechado</div><div class="conv-val" style="color:var(--text3)">${txVF}%</div><div class="conv-sub">${nF} de ${nV} visitas</div></div>`;
+    `<div class="conv-card" style="border-left-color:var(--blue)"><div class="conv-lbl">Visita para Conversa</div><div class="conv-val" style="color:var(--blue)">${txVC}%</div><div class="conv-sub">${nC} de ${nV} visitas</div></div>`+
+    `<div class="conv-card" style="border-left-color:var(--orange)"><div class="conv-lbl">Conversa para Proposta</div><div class="conv-val" style="color:var(--orange)">${txCP}%</div><div class="conv-sub">${nP} de ${nC} conversas</div></div>`+
+    `<div class="conv-card" style="border-left-color:var(--green2)"><div class="conv-lbl">Proposta para Fechado</div><div class="conv-val" style="color:var(--green2)">${txPF}%</div><div class="conv-sub">${nF} de ${nP} propostas</div></div>`+
+    `<div class="conv-card" style="border-left-color:var(--text3)"><div class="conv-lbl">Visita para Fechado</div><div class="conv-val" style="color:var(--text3)">${txVF}%</div><div class="conv-sub">${nF} de ${nV} visitas</div></div>`;
 
   // SEC 3
   const vPM=meses.map(m=>visitas.filter(v=>v.status==='visita'&&v.data&&v.data.startsWith(m)).length);
   const cPM=meses.map(m=>visitas.filter(v=>v.status==='conversa'&&v.data&&v.data.startsWith(m)).length);
   const labels=meses.map(nomeMesShort);
   if(charts['ca']){try{charts['ca'].destroy();}catch(e){}}
-  charts['ca']=new Chart(document.getElementById('chart-ativ'),{type:'line',data:{labels,datasets:[{label:'Visitas',data:vPM,borderColor:'#2563EB',backgroundColor:'rgba(37,99,235,0.08)',borderWidth:2,pointRadius:3,tension:.3,fill:true},{label:'Conversas',data:cPM,borderColor:'#00C896',backgroundColor:'rgba(0,200,150,0.08)',borderWidth:2,pointRadius:3,tension:.3,fill:true}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:true,labels:{font:{size:10},boxWidth:10}}},scales:{x:{ticks:{font:{size:10},color:'#9CA3AF'},grid:{color:'rgba(0,0,0,0.04)'}},y:{beginAtZero:true,ticks:{font:{size:10},color:'#9CA3AF'},grid:{color:'rgba(0,0,0,0.04)'}}}}}});
+  charts['ca']=new Chart(document.getElementById('chart-ativ'),{type:'line',data:{labels,datasets:[{label:'Visitas',data:vPM,borderColor:'#2563EB',backgroundColor:'rgba(37,99,235,0.08)',borderWidth:2,pointRadius:3,tension:.3,fill:true},{label:'Conversas',data:cPM,borderColor:'#00C896',backgroundColor:'rgba(0,200,150,0.08)',borderWidth:2,pointRadius:3,tension:.3,fill:true}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:true,labels:{font:{size:10},boxWidth:10}}},scales:{x:{ticks:{font:{size:10},color:'#9CA3AF'},grid:{color:'rgba(0,0,0,0.04)'}},y:{beginAtZero:true,ticks:{font:{size:10},color:'#9CA3AF'},grid:{color:'rgba(0,0,0,0.04)'}}}}});
 
   // SEC 4
   document.getElementById('anal-funil').innerHTML=
@@ -683,16 +683,16 @@ function renderAnalise(){
 
   // INSIGHTS
   const h2=hj();
-  const gargaloItems=[{n:'Visita→Conversa',v:txVC},{n:'Conversa→Proposta',v:txCP},{n:'Proposta→Fechado',v:txPF}];
+  const gargaloItems=[{n:'Visita-Conversa',v:txVC},{n:'Conversa-Proposta',v:txCP},{n:'Proposta-Fechado',v:txPF}];
   const garg=gargaloItems.reduce((a,b)=>a.v<b.v?a:b);
   const urgentes=visitas.filter(v=>v.status==='proposta'&&v.deadline&&v.deadline<=h2);
   const venc2=visitas.filter(v=>v.deadline&&v.deadline<h2&&v.status!=='fechado'&&v.status!=='descartado');
   const faltamCl=Math.max(metas.sm_clientes-nF,0);
   const faltamFat=Math.max(metas.sm_fat-fatTotal,0);
   const mesesPara=_ritmo*30>0?Math.ceil(faltamCl/(_ritmo*30)):'-';
-  const acoes=urgentes.length>0?urgentes.map(v=>`<strong>${v.empresa}</strong> — proposta desde ${fmtD(v.data)}, deadline ${v.deadline===h2?'HOJE':'vencido'} → ${v.proximo||'ligar agora'}`).join('<br>'):venc2.length>0?venc2.slice(0,3).map(v=>`<strong>${v.empresa}</strong> — deadline vencido em ${fmtD(v.deadline)}`).join('<br>'):'Nenhuma ação urgente no momento. Continue prospectando.';
+  const acoes=urgentes.length>0?urgentes.map(v=>`<strong>${v.empresa}</strong> — proposta desde ${fmtD(v.data)}, deadline ${v.deadline===h2?'HOJE':'vencido'} - ${v.proximo||'ligar agora'}`).join('<br>'):venc2.length>0?venc2.slice(0,3).map(v=>`<strong>${v.empresa}</strong> — deadline vencido em ${fmtD(v.deadline)}`).join('<br>'):'Nenhuma ação urgente no momento. Continue prospectando.';
   document.getElementById('anal-insights').innerHTML=[
-    {n:'Insight 1',t:'Gargalo principal',b:`A etapa <strong>${garg.n}</strong> está com <strong>${garg.v}%</strong> de conversão${garg.v<40?' — abaixo do ideal de 40%':' — dentro do esperado'}. ${garg.n==='Visita→Conversa'?'Você está visitando mas não qualificando a conversa. Revise a abertura da abordagem.':garg.n==='Conversa→Proposta'?'Você conversa mas não transforma em proposta. Acelere o envio após cada reunião.':'Você envia propostas mas não fecha. Revise o follow-up e o conteúdo da proposta.'}`,c:'var(--red)'},
+    {n:'Insight 1',t:'Gargalo principal',b:`A etapa <strong>${garg.n}</strong> está com <strong>${garg.v}%</strong> de conversão${garg.v<40?' — abaixo do ideal de 40%':' — dentro do esperado'}. ${garg.n==='Visita-Conversa'?'Você está visitando mas não qualificando a conversa. Revise a abertura da abordagem.':garg.n==='Conversa-Proposta'?'Você conversa mas não transforma em proposta. Acelere o envio após cada reunião.':'Você envia propostas mas não fecha. Revise o follow-up e o conteúdo da proposta.'}`,c:'var(--red)'},
     {n:'Insight 2',t:'Segmento em destaque',b:top10.length>0?`Melhor: <strong>${top10[0].nome}</strong> com ${top10[0].conv}% de conversão (${top10[0].v} visitas, ${top10[0].f} fechados).${nArr.filter(n=>n.conv===0&&n.v>=2).length>0?' Crítico: <strong>'+nArr.filter(n=>n.conv===0&&n.v>=2)[0].nome+'</strong> com 0% de conversão após '+nArr.filter(n=>n.conv===0&&n.v>=2)[0].v+' visitas.':''}` :'Cadastre mais prospects com segmento para ver análise por nicho.',c:'var(--green2)'},
     {n:'Insight 3',t:'Meta vs Realidade',b:`Você tem <strong>${nF} clientes</strong>. Faltam <strong>${faltamCl}</strong> para a supermeta de ${metas.sm_clientes}. Faltam <strong>R$${faltamFat.toLocaleString('pt-BR')}</strong> para R$${metas.sm_fat.toLocaleString('pt-BR')}/mês. No ritmo atual, você precisa de mais <strong>${typeof mesesPara==='number'?mesesPara+' meses':'-'}</strong> para atingir a supermeta.`,c:'var(--blue)'},
     {n:'Insight 4',t:'Ação imediata',b:acoes,c:'var(--amber)'}
@@ -710,7 +710,7 @@ function abrirIns(){
   let t=`=== CRM PROSPECÇÃO – CONTROLA GESTÃO BPO ===\nData: ${new Date().toLocaleDateString('pt-BR')}\n\n`;
   t+=`SUPERMETA\nClientes: ${nF}/${metas.sm_clientes} | Prazo: ${metas.sm_prazo||'não definido'}\nFaturamento: R$${fat.toLocaleString('pt-BR')} / R$${metas.sm_fat.toLocaleString('pt-BR')}\n\n`;
   t+=`FUNIL\nVisitas: ${nV} | Conversas: ${nC} | Propostas: ${nP} | Fechados: ${nF}\n`;
-  t+=`V→C: ${nV>0?Math.round(nC/nV*100):0}% | C→P: ${nC>0?Math.round(nP/nC*100):0}% | P→F: ${nP>0?Math.round(nF/nP*100):0}%\n\n`;
+  t+=`V-C: ${nV>0?Math.round(nC/nV*100):0}% | C-P: ${nC>0?Math.round(nP/nC*100):0}% | P-F: ${nP>0?Math.round(nF/nP*100):0}%\n\n`;
   t+=`DEADLINES VENCIDOS (${venc.length})\n`;venc.forEach(v=>t+=`- ${v.empresa} | ${v.deadline} | ${v.proximo||'sem próximo passo'}\n`);
   t+=`\nCLIENTES FECHADOS\n`;visitas.filter(v=>v.status==='fechado').forEach(v=>t+=`- ${v.empresa} | ${v.nicho||'-'} | R$${(v.ticket||1000).toLocaleString('pt-BR')}/mês\n`);
   t+=`\nPROPOSTAS ABERTAS\n`;visitas.filter(v=>v.status==='proposta').forEach(v=>t+=`- ${v.empresa} | desde ${v.data} | ${v.proximo||'sem próximo passo'}\n`);
@@ -726,7 +726,7 @@ function abrirIns(){
     if(v.motivo_perda)t+=`\nMotivo da perda: ${v.motivo_perda}`;
     t+=`\n`;
   });
-  t+=`\n---\nPeça: "Analise meu CRM. Com base nas observações de cada prospect, diga onde estou errando na abordagem, quais têm mais chance de fechar, onde está o gargalo e o que priorizar hoje."`;
+  t+='\n---\nPeça: Analise meu CRM. Com base nas observações de cada prospect, diga onde estou errando na abordagem, quais têm mais chance de fechar, onde está o gargalo e o que priorizar hoje.';
   document.getElementById('ins-txt').value=t;
   document.getElementById('cok').style.display='none';
   document.getElementById('ov-ins').classList.add('open');
