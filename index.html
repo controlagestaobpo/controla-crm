@@ -117,7 +117,7 @@ html,body{background:var(--bg);color:var(--text);font-family:-apple-system,Blink
 .ac-lbl{font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.6px;font-weight:700;margin-bottom:4px;}
 .ac-val{font-size:22px;font-weight:800;color:var(--navy);}
 .ac-sub{font-size:11px;color:var(--text3);margin-top:2px;}
-.conv-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:4px;}
+.conv-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:4px;} .conv-grid .conv-card:last-child:nth-child(odd){grid-column:span 2;}
 .conv-card{background:#fff;border-radius:12px;padding:12px 14px;border-left:4px solid;box-shadow:var(--shadow);}
 .conv-lbl{font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;font-weight:700;margin-bottom:6px;}
 .conv-flow{font-size:20px;font-weight:800;color:var(--text);margin-bottom:4px;display:flex;align-items:center;gap:6px;}
@@ -264,8 +264,8 @@ html,body{background:var(--bg);color:var(--text);font-family:-apple-system,Blink
       <div class="conv-grid" id="anal-conv"></div>
       <div class="anal-title">Atividade comercial</div>
       <div class="chart-box">
-        <div class="chart-title">Volume mensal por status</div>
-        <div class="chart-sub">Últimos 12 meses — visitas, conversas, propostas e fechamentos</div>
+        <div class="chart-title">Novos prospects por mês</div>
+        <div class="chart-sub">Quantos prospects foram cadastrados em cada mês</div>
         <div class="chart-wrap"><canvas id="chart-ativ"></canvas></div>
       </div>
       <div class="anal-title">Funil de conversão</div>
@@ -658,8 +658,14 @@ function renderAnalise(){
   charts['ca']=new Chart(document.getElementById('chart-ativ'),{type:'line',data:{labels,datasets:[{label:'Visitas',data:vPM,borderColor:'#2563EB',backgroundColor:'rgba(37,99,235,0.08)',borderWidth:2,pointRadius:3,tension:.3,fill:true},{label:'Conversas',data:cPM,borderColor:'#00C896',backgroundColor:'rgba(0,200,150,0.08)',borderWidth:2,pointRadius:3,tension:.3,fill:true}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:true,labels:{font:{size:10},boxWidth:10}}},scales:{x:{ticks:{font:{size:10},color:'#9CA3AF'},grid:{color:'rgba(0,0,0,0.04)'}},y:{beginAtZero:true,ticks:{font:{size:10},color:'#9CA3AF'},grid:{color:'rgba(0,0,0,0.04)'}}}}});
 
   // SEC 4
+  // Funil acumulado - cada etapa inclui quem passou por ela
   document.getElementById('anal-funil').innerHTML=
-    [['Visitas totais',total,'#1A3A6B',100],['Conversas',nC,'#D97706',total>0?Math.round(nC/total*100):0],['Propostas enviadas',nP,'#7C3AED',total>0?Math.round(nP/total*100):0],['Clientes fechados',nF,'#059669',total>0?Math.round(nF/total*100):0]]
+    [
+      ['Visitas totais', total, '#1A3A6B', 100],
+      ['Chegaram em conversa', nChegouConversa, '#D97706', total>0?Math.round(nChegouConversa/total*100):0],
+      ['Propostas enviadas', nChegouProposta, '#7C3AED', total>0?Math.round(nChegouProposta/total*100):0],
+      ['Clientes fechados', nF, '#059669', total>0?Math.round(nF/total*100):0]
+    ]
     .map(([l,v,c,p])=>`<div class="funil-row"><div class="funil-lbl">${l}</div><div class="funil-bar-bg"><div class="funil-bar-fill" style="width:${p}%;background:${c};">${v}</div></div><div class="funil-pct" style="color:${c}">${p}%</div></div>`).join('');
 
   // SEC 5
@@ -699,7 +705,7 @@ function renderAnalise(){
 
   // INSIGHTS
   const h2=hj();
-  const gargaloItems=[{n:'Visita-Conversa',v:txVC},{n:'Conversa-Proposta',v:txCP},{n:'Proposta-Fechado',v:txPF}];
+  const gargaloItems=[{n:'Visita-Conversa',v:txVC},{n:'Conversa-Proposta',v:txCP},{n:'Proposta-Fechado',v:txPF},{n:'Conversa-Fechado',v:txCF}];
   const garg=gargaloItems.reduce((a,b)=>a.v<b.v?a:b);
   const urgentes=visitas.filter(v=>v.status==='proposta'&&v.deadline&&v.deadline<=h2);
   const venc2=visitas.filter(v=>v.deadline&&v.deadline<h2&&v.status!=='fechado'&&v.status!=='descartado');
