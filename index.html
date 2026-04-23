@@ -615,14 +615,14 @@ function renderAnalise(){
   const contatos=nV+nC;
   const total=visitas.length;
 
-  // SEÇÃO 1
+  // SEC 1
   document.getElementById('anal-status').innerHTML=`
     <div class="ac"><div class="ac-lbl">Clientes</div><div class="ac-val" style="color:var(--green2)">${nF}</div><div class="ac-sub">Meta: ${metas.sm_clientes}</div></div>
     <div class="ac"><div class="ac-lbl">Faturamento</div><div class="ac-val">R$${fatTotal.toLocaleString('pt-BR')}</div><div class="ac-sub">Meta: R$${metas.sm_fat.toLocaleString('pt-BR')}</div></div>
     <div class="ac"><div class="ac-lbl">Contatos totais</div><div class="ac-val">${contatos}</div><div class="ac-sub">Visitas + Conversas</div></div>
     <div class="ac"><div class="ac-lbl">Ticket médio</div><div class="ac-val">R$${ticketMedio.toLocaleString('pt-BR')}</div><div class="ac-sub">por cliente/mês</div></div>`;
 
-  // SEÇÃO 2
+  // SEC 2
   const txVC=nV>0?Math.round(nC/nV*100):0;
   const txCP=nC>0?Math.round(nP/nC*100):0;
   const txPF=nP>0?Math.round(nF/nP*100):0;
@@ -633,25 +633,25 @@ function renderAnalise(){
     `<div class="conv-card" style="border-left-color:var(--green2)"><div class="conv-lbl">Proposta → Fechado</div><div class="conv-val" style="color:var(--green2)">${txPF}%</div><div class="conv-sub">${nF} de ${nP} propostas</div></div>`+
     `<div class="conv-card" style="border-left-color:var(--text3)"><div class="conv-lbl">Visita → Fechado</div><div class="conv-val" style="color:var(--text3)">${txVF}%</div><div class="conv-sub">${nF} de ${nV} visitas</div></div>`;
 
-  // SEÇÃO 3
+  // SEC 3
   const vPM=meses.map(m=>visitas.filter(v=>v.status==='visita'&&v.data&&v.data.startsWith(m)).length);
   const cPM=meses.map(m=>visitas.filter(v=>v.status==='conversa'&&v.data&&v.data.startsWith(m)).length);
   const labels=meses.map(nomeMesShort);
   if(charts['ca']){try{charts['ca'].destroy();}catch(e){}}
   charts['ca']=new Chart(document.getElementById('chart-ativ'),{type:'line',data:{labels,datasets:[{label:'Visitas',data:vPM,borderColor:'#2563EB',backgroundColor:'rgba(37,99,235,0.08)',borderWidth:2,pointRadius:3,tension:.3,fill:true},{label:'Conversas',data:cPM,borderColor:'#00C896',backgroundColor:'rgba(0,200,150,0.08)',borderWidth:2,pointRadius:3,tension:.3,fill:true}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:true,labels:{font:{size:10},boxWidth:10}}},scales:{x:{ticks:{font:{size:10},color:'#9CA3AF'},grid:{color:'rgba(0,0,0,0.04)'}},y:{beginAtZero:true,ticks:{font:{size:10},color:'#9CA3AF'},grid:{color:'rgba(0,0,0,0.04)'}}}}}});
 
-  // SEÇÃO 4
+  // SEC 4
   document.getElementById('anal-funil').innerHTML=
     `<div style="font-size:12px;font-weight:700;color:var(--navy);margin-bottom:10px;">Funil de conversão</div>`+
     [['Visitas totais',total,'#1A3A6B',100],['Propostas enviadas',nP,'#7C3AED',total>0?Math.round(nP/total*100):0],['Clientes fechados',nF,'#059669',total>0?Math.round(nF/total*100):0]]
     .map(([l,v,c,p])=>`<div class="funil-row"><div class="funil-lbl">${l}</div><div class="funil-bar-bg"><div class="funil-bar-fill" style="width:${p}%;background:${c};">${v}</div></div><div class="funil-pct" style="color:${c}">${p}%</div></div>`).join('');
 
-  // SEÇÃO 5
+  // SEC 5
   const perdaMotivos=[['Não consegui contato','var(--red)'],['Já tem solução','var(--orange)'],['Sem verba no momento','var(--orange)'],['Não viu necessidade','var(--purple)'],['Momento ruim para a empresa','var(--blue)']];
   const perdaHtml=perdaMotivos.map(([m,c])=>{const cnt=visitas.filter(v=>v.motivo_perda===m).length;return cnt>0?`<div class="perda-card" style="border-left-color:${c}"><span class="perda-nome">${m}</span><span class="perda-cnt" style="color:${c}">${cnt}</span></div>`:null;}).filter(Boolean).join('');
   document.getElementById('anal-perdas').innerHTML=perdaHtml||'<div style="color:var(--text3);font-size:13px;padding:4px 0 8px;">Nenhuma perda registrada ainda.</div>';
 
-  // SEÇÃO 6
+  // SEC 6
   const nichos={};
   visitas.forEach(v=>{if(!v.nicho)return;if(!nichos[v.nicho])nichos[v.nicho]={v:0,p:0,f:0};nichos[v.nicho].v++;if(v.status==='proposta'||v.status==='fechado')nichos[v.nicho].p++;if(v.status==='fechado')nichos[v.nicho].f++;});
   const nArr=Object.entries(nichos).map(([nome,d])=>({nome,...d,conv:d.v>0?Math.round(d.f/d.v*100):0})).sort((a,b)=>b.conv-a.conv||b.f-a.f||b.v-a.v);
@@ -664,7 +664,7 @@ function renderAnalise(){
     document.getElementById('anal-podium').innerHTML=`<div class="podium-wrap"><div class="podium-top3">${p2?`<div class="podium-col podium-col-2">${pC(p2)}<div class="podium-block podium-block-2">2°</div></div>`:''}${p1?`<div class="podium-col podium-col-1">${pC(p1)}<div class="podium-block podium-block-1">1°</div></div>`:''}${p3?`<div class="podium-col podium-col-3">${pC(p3)}<div class="podium-block podium-block-3">3°</div></div>`:''}</div>${top10.length>3?`<div class="podium-rest">${top10.slice(3).map((n,i)=>`<div class="podium-rest-item"><div class="podium-rest-pos">${i+4}°</div><div class="podium-rest-nome">${n.nome}</div><div class="podium-rest-stats">${n.v} visitas · ${n.p} prop. · ${n.f} fechados</div><div class="podium-rest-conv" style="color:${cC(n.conv)}">${n.conv}%</div></div>`).join('')}</div>`:''}</div>`;
   }
 
-  // PROJEÇÃO
+  // PROJECAO
   const _h=new Date(),_fim=new Date('2026-12-31T23:59:59');
   const _dr=Math.max(0,Math.ceil((_fim-_h)/86400000));
   const _datas=visitas.filter(v=>v.data).map(v=>new Date(v.data+'T12:00:00')).sort((a,b)=>a-b);
