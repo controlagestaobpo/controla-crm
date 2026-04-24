@@ -691,10 +691,33 @@ function renderAnalise(){
     ]
     .map(([l,v,c,p])=>`<div class="funil-row"><div class="funil-lbl">${l}</div><div class="funil-bar-bg"><div class="funil-bar-fill" style="width:${p}%;background:${c};">${v}</div></div><div class="funil-pct" style="color:${c}">${p}%</div></div>`).join('');
 
-  // SEC 5
-  const perdaMotivos=[['Não consegui contato','var(--red)'],['Já tem solução','var(--orange)'],['Sem verba no momento','var(--orange)'],['Não viu necessidade','var(--purple)'],['Momento ruim para a empresa','var(--blue)']];
-  const perdaHtml=perdaMotivos.map(([m,c])=>{const cnt=visitas.filter(v=>v.motivo_perda===m).length;return cnt>0?`<div class="perda-card" style="border-left-color:${c}"><span class="perda-nome">${m}</span><span class="perda-cnt" style="color:${c}">${cnt}</span></div>`:null;}).filter(Boolean).join('');
-  document.getElementById('anal-perdas').innerHTML=perdaHtml||'<div style="color:var(--text3);font-size:13px;padding:4px 0 8px;">Nenhuma perda registrada ainda.</div>';
+  // SEC 5 - Grafico motivos de perda
+  const perdaLabels=['Nao consegui contato','Ja tem solucao','Sem verba','Nao viu necessidade','Momento ruim'];
+  const perdaKeys=['Não consegui contato','Já tem solução','Sem verba no momento','Não viu necessidade','Momento ruim para a empresa'];
+  const perdaData=perdaKeys.map(m=>visitas.filter(v=>v.motivo_perda===m).length);
+  const perdaCores=['rgba(220,38,38,0.8)','rgba(234,88,12,0.8)','rgba(217,119,6,0.8)','rgba(124,58,237,0.8)','rgba(37,99,235,0.8)'];
+  if(charts['cp']){try{charts['cp'].destroy();}catch(e){}}
+  const canvasP=document.getElementById('chart-perdas');
+  if(canvasP){
+    if(perdaData.some(v=>v>0)){
+      charts['cp']=new Chart(canvasP,{
+        type:'bar',
+        data:{labels:perdaLabels,datasets:[{data:perdaData,backgroundColor:perdaCores,borderRadius:6}]},
+        options:{
+          indexAxis:'y',
+          responsive:true,
+          maintainAspectRatio:false,
+          plugins:{legend:{display:false}},
+          scales:{
+            x:{beginAtZero:true,ticks:{font:{size:10},color:'#9CA3AF',stepSize:1},grid:{color:'rgba(0,0,0,0.04)'}},
+            y:{ticks:{font:{size:10},color:'#374151'}}
+          }
+        }
+      });
+    } else {
+      canvasP.parentElement.innerHTML='<div style="color:var(--text3);font-size:13px;padding:20px;text-align:center;">Nenhuma perda registrada ainda.</div>';
+    }
+  }
 
   // SEC 6
   const nichos={};
