@@ -628,6 +628,8 @@ function renderAnalise(){
   const nC=visitas.filter(v=>v.status==='conversa').length;
   const nP=visitas.filter(v=>v.status==='proposta').length;
   const nF=visitas.filter(v=>v.status==='fechado').length;
+  const nCC=nC+nP+nF;
+  const nCP=nP+nF;
   const fechados=visitas.filter(v=>v.status==='fechado');
   const fatTotal=fechados.reduce((s,v)=>s+(v.ticket||1000),0);
   const ticketMedio=nF>0?Math.round(fatTotal/nF):0;
@@ -642,8 +644,6 @@ function renderAnalise(){
     <div class="ac"><div class="ac-lbl">Ticket médio</div><div class="ac-val">R$${ticketMedio.toLocaleString('pt-BR')}</div><div class="ac-sub">por cliente/mês</div></div>`;
 
   // SEC 2 - logica acumulada
-  const nCC = nC + nP + nF;  // chegaram em conversa (conversa+proposta+fechado)
-  const nCP = nP + nF;       // chegaram em proposta (proposta+fechado)
   const txVC=total>0?Math.round(nCC/total*100):0;
   const txCP2=nCC>0?Math.round(nCP/nCC*100):0;
   const txPF=nCP>0?Math.round(nF/nCP*100):0;
@@ -729,6 +729,8 @@ function abrirIns(){
   const nC=visitas.filter(v=>v.status==='conversa').length;
   const nP=visitas.filter(v=>v.status==='proposta').length;
   const nF=visitas.filter(v=>v.status==='fechado').length;
+  const nCC=nC+nP+nF;
+  const nCP=nP+nF;
   const fat=visitas.filter(v=>v.status==='fechado').reduce((s,v)=>s+(v.ticket||1000),0);
   const perdas={};visitas.filter(v=>v.motivo_perda).forEach(v=>{perdas[v.motivo_perda]=(perdas[v.motivo_perda]||0)+1;});
   const venc=visitas.filter(v=>v.deadline&&v.deadline<=hj()&&v.status!=='fechado'&&v.status!=='descartado');
